@@ -1,21 +1,26 @@
 # ParkingMobile (Jetpack Compose + Material 3)
 
-A Jetpack Compose Android UI implementation inspired by the provided parking/charging mobile design.
+Jetpack Compose implementation of the requested parking app flow using Material 3 and dynamic light/dark theme support.
 
-## Implemented screens
+## Screen Sequence (0 → 8)
 
-- Charging status
-- Parking onboarding
-- Dashboard with station status
-- Auto payments onboarding
-- Brand splash-style screen
-- Payment summary
-- Charging solution onboarding
-- Vehicle selector
+0. Splash Screen  
+1. Slider - Hassle-Free Parking  
+2. Slider - Charging Solution  
+3. Slider - Auto Payments  
+4. Login  
+5. Dashboard  
+6. Add Option (vehicle options + add car)  
+7. Payment  
+8. Charging
 
-The app uses Material 3 with dynamic color (Android 12+) and light/dark fallback color schemes.
+## Theme
 
-## Run locally
+- Material 3 UI
+- Dynamic color on Android 12+
+- Fallback custom light/dark palettes with neon-green accent
+
+## Build
 
 ```bash
 gradle :app:assembleDebug
@@ -23,4 +28,6 @@ gradle :app:assembleDebug
 
 ## CI/CD
 
-GitHub Actions workflow at `.github/workflows/android-ci-cd.yml` runs lint + debug build on push/PR and creates release artifacts on version tags (`v*`).
+Workflow: `.github/workflows/android-ci-cd.yml`
+- Push/PR: lint + debug assemble + artifact upload
+- Tags (`v*`): release assemble + artifact upload

@@ -28,11 +28,11 @@ import androidx.compose.material.icons.outlined.BatteryChargingFull
 import androidx.compose.material.icons.outlined.CreditCard
 import androidx.compose.material.icons.outlined.DirectionsCar
 import androidx.compose.material.icons.outlined.EvStation
-import androidx.compose.material.icons.outlined.Paid
-import androidx.compose.material.icons.outlined.PinDrop
+import androidx.compose.material.icons.outlined.Lock
+import androidx.compose.material.icons.outlined.LocationOn
+import androidx.compose.material.icons.outlined.Payments
+import androidx.compose.material.icons.outlined.Person
 import androidx.compose.material.icons.outlined.Power
-import androidx.compose.material.icons.outlined.Route
-import androidx.compose.material3.AssistChip
 import androidx.compose.material3.Button
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
@@ -40,6 +40,7 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.NavigationBar
 import androidx.compose.material3.NavigationBarItem
+import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -62,171 +63,138 @@ class MainActivity : ComponentActivity() {
         super.onCreate(savedInstanceState)
         setContent {
             ParkingMobileTheme {
-                ParkingApp()
+                ParkingFlowApp()
             }
         }
     }
 }
 
+private enum class AppScreen {
+    Splash, SliderOne, SliderTwo, SliderThree, Login, Dashboard, AddOption, Payment, Charging
+}
+
 @OptIn(ExperimentalFoundationApi::class)
 @Composable
-fun ParkingApp() {
-    val pagerState = rememberPagerState(pageCount = { 8 })
+private fun ParkingFlowApp() {
+    val screens = AppScreen.entries
+    val pagerState = rememberPagerState(pageCount = { screens.size })
 
     Scaffold(
         bottomBar = {
             NavigationBar {
-                val icons = listOf(
-                    Icons.Outlined.DirectionsCar,
-                    Icons.Outlined.EvStation,
-                    Icons.Outlined.PinDrop,
-                    Icons.Outlined.CreditCard
-                )
-                var selected by remember { mutableIntStateOf(0) }
-                icons.forEachIndexed { index, icon ->
+                val navItems = listOf(Icons.Outlined.Power, Icons.Outlined.DirectionsCar, Icons.Outlined.CreditCard, Icons.Outlined.EvStation)
+                var selectedIndex by remember { mutableIntStateOf(0) }
+                navItems.forEachIndexed { index, icon ->
                     NavigationBarItem(
-                        selected = selected == index,
-                        onClick = { selected = index },
+                        selected = selectedIndex == index,
+                        onClick = { selectedIndex = index },
                         icon = { Icon(icon, contentDescription = null) }
                     )
                 }
             }
         }
-    ) { padding ->
+    ) { paddingValues ->
         HorizontalPager(
             state = pagerState,
             modifier = Modifier
                 .fillMaxSize()
-                .padding(padding),
-            contentPadding = PaddingValues(20.dp)
+                .padding(paddingValues),
+            contentPadding = PaddingValues(18.dp)
         ) { page ->
-            when (page) {
-                0 -> ChargingStatusScreen()
-                1 -> OnboardingScreen("Hassle-Free Parking", "Seamlessly find, reserve, and pay for parking.")
-                2 -> DashboardScreen()
-                3 -> OnboardingScreen("Auto Payments", "Automatic payments for a seamless parking experience.")
-                4 -> BrandScreen()
-                5 -> PaymentScreen()
-                6 -> OnboardingScreen("Charging Solution", "Effortless charging at your fingertips.")
-                else -> VehicleScreen()
+            when (screens[page]) {
+                AppScreen.Splash -> SplashScreen()
+                AppScreen.SliderOne -> SliderScreen("Hassle-Free Parking", "Seamlessly find, reserve and pay for parking.", 0)
+                AppScreen.SliderTwo -> SliderScreen("Charging Solution", "Effortless charging solutions at your fingertips.", 1)
+                AppScreen.SliderThree -> SliderScreen("Auto Payments", "Automatic cashless payments for seamless parking.", 2)
+                AppScreen.Login -> LoginScreen()
+                AppScreen.Dashboard -> DashboardScreen()
+                AppScreen.AddOption -> AddOptionScreen()
+                AppScreen.Payment -> PaymentScreen()
+                AppScreen.Charging -> ChargingScreen()
             }
         }
     }
 }
 
 @Composable
-private fun ChargingStatusScreen() {
-    ScreenCard("Charging 71%", "Charging rate 20 kW • 16 mins elapsed", Icons.Outlined.BatteryChargingFull)
-}
-
-@Composable
-private fun DashboardScreen() {
-    Column(
-        modifier = Modifier
-            .fillMaxSize()
-            .verticalScroll(rememberScrollState()),
-        verticalArrangement = Arrangement.spacedBy(14.dp)
-    ) {
-        HeroCard("Effortless Parking & Charging")
-        StatsCard()
-        ScreenCard("Nearest Station", "City parking garage · 162 St", Icons.Outlined.Route)
-    }
-}
-
-@Composable
-private fun PaymentScreen() {
-    Column(verticalArrangement = Arrangement.spacedBy(14.dp)) {
-        ScreenCard("Your Balance", "$2,745.79", Icons.Outlined.Paid)
-        ScreenCard("Charging Cost", "$54.00", Icons.Outlined.CreditCard)
-        AssistChip(onClick = {}, label = { Text("GPay ••••0528") })
-    }
-}
-
-@Composable
-private fun BrandScreen() {
-    Box(
-        modifier = Modifier
-            .fillMaxSize()
-            .background(MaterialTheme.colorScheme.surfaceContainerLowest),
-        contentAlignment = Alignment.Center
-    ) {
-        Column(horizontalAlignment = Alignment.CenterHorizontally) {
-            Box(
-                modifier = Modifier
-                    .size(72.dp)
-                    .background(MaterialTheme.colorScheme.primary, CircleShape),
-                contentAlignment = Alignment.Center
-            ) {
-                Icon(Icons.Outlined.Power, null, tint = Color.Black)
-            }
-            Spacer(Modifier.height(8.dp))
-            Text("ParkVolt", style = MaterialTheme.typography.headlineSmall)
-        }
-    }
-}
-
-@Composable
-private fun VehicleScreen() {
-    Column(verticalArrangement = Arrangement.spacedBy(14.dp)) {
-        ScreenCard("Hassle-Free Parking", "Mercedes-Benz coupe", Icons.Outlined.DirectionsCar)
-        Row(horizontalArrangement = Arrangement.spacedBy(10.dp)) {
-            VehicleTypeChip("Car", true)
-            VehicleTypeChip("Bike", false)
-            VehicleTypeChip("Truck", false)
-        }
-        Button(onClick = {}, modifier = Modifier.fillMaxWidth()) { Text("Add Car") }
-    }
-}
-
-@Composable
-private fun VehicleTypeChip(title: String, selected: Boolean) {
-    Card(
-        colors = CardDefaults.cardColors(
-            containerColor = if (selected) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.surfaceVariant
-        ),
-        shape = RoundedCornerShape(16.dp)
-    ) {
-        Text(
-            text = title,
-            modifier = Modifier.padding(horizontal = 16.dp, vertical = 10.dp),
-            color = if (selected) Color.Black else MaterialTheme.colorScheme.onSurfaceVariant
-        )
-    }
-}
-
-@Composable
-private fun OnboardingScreen(title: String, subtitle: String) {
-    Card(
-        shape = RoundedCornerShape(28.dp),
-        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceContainerLow),
-        modifier = Modifier.fillMaxSize()
-    ) {
+private fun SplashScreen() {
+    Card(shape = RoundedCornerShape(28.dp), modifier = Modifier.fillMaxSize()) {
         Box(
             modifier = Modifier
                 .fillMaxSize()
-                .background(
-                    Brush.verticalGradient(
-                        listOf(MaterialTheme.colorScheme.surfaceContainerLowest, MaterialTheme.colorScheme.surfaceContainerHigh)
-                    )
-                )
+                .background(MaterialTheme.colorScheme.surfaceContainerLowest)
                 .padding(24.dp)
         ) {
-            Column(modifier = Modifier.align(Alignment.BottomStart)) {
-                Text(title, style = MaterialTheme.typography.headlineSmall, fontWeight = FontWeight.Bold)
-                Spacer(Modifier.height(8.dp))
-                Text(subtitle, style = MaterialTheme.typography.bodyMedium)
-                Spacer(Modifier.height(18.dp))
-                Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                    repeat(3) { idx ->
-                        Box(
-                            modifier = Modifier
-                                .height(6.dp)
-                                .width(if (idx == 1) 26.dp else 14.dp)
-                                .background(
-                                    if (idx == 1) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.outlineVariant,
-                                    RoundedCornerShape(16.dp)
-                                )
+            Column(modifier = Modifier.align(Alignment.Center), horizontalAlignment = Alignment.CenterHorizontally) {
+                Box(
+                    modifier = Modifier
+                        .size(72.dp)
+                        .background(MaterialTheme.colorScheme.primary, RoundedCornerShape(16.dp)),
+                    contentAlignment = Alignment.Center
+                ) {
+                    Icon(Icons.Outlined.Power, contentDescription = null, tint = Color.Black)
+                }
+                Spacer(Modifier.height(12.dp))
+                Text("ParkVolt", style = MaterialTheme.typography.headlineSmall, fontWeight = FontWeight.Bold)
+            }
+            Box(
+                modifier = Modifier
+                    .align(Alignment.BottomCenter)
+                    .fillMaxWidth()
+                    .height(140.dp)
+                    .background(
+                        Brush.verticalGradient(
+                            listOf(Color.Transparent, MaterialTheme.colorScheme.surfaceContainerHigh)
                         )
+                    )
+            )
+        }
+    }
+}
+
+@Composable
+private fun SliderScreen(title: String, subtitle: String, activeDot: Int) {
+    Card(shape = RoundedCornerShape(28.dp), modifier = Modifier.fillMaxSize()) {
+        Box(
+            modifier = Modifier
+                .fillMaxSize()
+                .background(MaterialTheme.colorScheme.surface)
+        ) {
+            Box(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(360.dp)
+                    .background(MaterialTheme.colorScheme.surfaceContainerLowest)
+            )
+
+            Card(
+                modifier = Modifier
+                    .align(Alignment.BottomCenter)
+                    .fillMaxWidth()
+                    .padding(12.dp),
+                shape = RoundedCornerShape(28.dp),
+                colors = CardDefaults.cardColors(containerColor = Color(0xFF121A2A))
+            ) {
+                Column(
+                    modifier = Modifier.padding(24.dp),
+                    horizontalAlignment = Alignment.CenterHorizontally
+                ) {
+                    Text(title, color = Color.White, style = MaterialTheme.typography.headlineSmall, fontWeight = FontWeight.Bold)
+                    Spacer(Modifier.height(8.dp))
+                    Text(subtitle, color = Color(0xFFC6CEDD), textAlign = TextAlign.Center)
+                    Spacer(Modifier.height(14.dp))
+                    Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                        repeat(3) { index ->
+                            Box(
+                                modifier = Modifier
+                                    .height(6.dp)
+                                    .width(if (index == activeDot) 24.dp else 12.dp)
+                                    .background(
+                                        if (index == activeDot) MaterialTheme.colorScheme.primary else Color(0xFF8A93A6),
+                                        RoundedCornerShape(12.dp)
+                                    )
+                            )
+                        }
                     }
                 }
             }
@@ -235,61 +203,134 @@ private fun OnboardingScreen(title: String, subtitle: String) {
 }
 
 @Composable
-private fun HeroCard(title: String) {
-    Card(shape = RoundedCornerShape(24.dp)) {
-        Column(modifier = Modifier.padding(20.dp)) {
-            Text(title, style = MaterialTheme.typography.headlineSmall, fontWeight = FontWeight.Bold)
-            Spacer(Modifier.height(8.dp))
-            Text("Battery 73% • Remaining 83km")
-        }
-    }
-}
-
-@Composable
-private fun StatsCard() {
-    Card(shape = RoundedCornerShape(24.dp)) {
-        Row(
+private fun LoginScreen() {
+    Card(shape = RoundedCornerShape(28.dp), modifier = Modifier.fillMaxSize()) {
+        Column(
             modifier = Modifier
-                .fillMaxWidth()
-                .padding(16.dp),
-            horizontalArrangement = Arrangement.SpaceBetween,
-            verticalAlignment = Alignment.CenterVertically
+                .fillMaxSize()
+                .background(MaterialTheme.colorScheme.surface)
+                .padding(20.dp),
+            verticalArrangement = Arrangement.Center
         ) {
-            Stat("Battery", "73%")
-            Stat("Remaining", "83km")
+            Text("Welcome Back", style = MaterialTheme.typography.headlineMedium, fontWeight = FontWeight.Bold)
+            Spacer(Modifier.height(6.dp))
+            Text("Login to continue parking and charging", color = MaterialTheme.colorScheme.onSurfaceVariant)
+            Spacer(Modifier.height(20.dp))
+            OutlinedTextField(value = "", onValueChange = {}, modifier = Modifier.fillMaxWidth(), label = { Text("Email") }, leadingIcon = { Icon(Icons.Outlined.Person, null) })
+            Spacer(Modifier.height(12.dp))
+            OutlinedTextField(value = "", onValueChange = {}, modifier = Modifier.fillMaxWidth(), label = { Text("Password") }, leadingIcon = { Icon(Icons.Outlined.Lock, null) })
+            Spacer(Modifier.height(18.dp))
+            Button(onClick = {}, modifier = Modifier.fillMaxWidth()) { Text("Login") }
         }
     }
 }
 
 @Composable
-private fun Stat(label: String, value: String) {
-    Column(horizontalAlignment = Alignment.CenterHorizontally) {
-        Text(label, style = MaterialTheme.typography.labelLarge)
-        Text(value, style = MaterialTheme.typography.titleLarge, fontWeight = FontWeight.Bold)
+private fun DashboardScreen() {
+    Column(
+        modifier = Modifier
+            .fillMaxSize()
+            .verticalScroll(rememberScrollState()),
+        verticalArrangement = Arrangement.spacedBy(12.dp)
+    ) {
+        ScreenBlock("Effortless Parking & Charging", "Battery 73% • Remaining 83km", Icons.Outlined.DirectionsCar)
+        Row(horizontalArrangement = Arrangement.spacedBy(10.dp)) {
+            StatCard("Battery", "73%")
+            StatCard("Remaining", "83km")
+        }
+        ScreenBlock("Nearest Station", "Oslo city parking garage, Stenersgata 162", Icons.Outlined.LocationOn)
     }
 }
 
 @Composable
-private fun ScreenCard(title: String, subtitle: String, icon: androidx.compose.ui.graphics.vector.ImageVector) {
+private fun AddOptionScreen() {
+    Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
+        ScreenBlock("Hassle-Free Parking", "Mercedes-Benz coupe", Icons.Outlined.DirectionsCar)
+        Row(horizontalArrangement = Arrangement.spacedBy(10.dp)) {
+            TypeChip("Car", true)
+            TypeChip("Bike", false)
+            TypeChip("Truck", false)
+        }
+        Button(onClick = {}, modifier = Modifier.fillMaxWidth()) {
+            Text("Add Car")
+        }
+    }
+}
+
+@Composable
+private fun PaymentScreen() {
+    Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
+        ScreenBlock("Your Balance", "$2,745.79", Icons.Outlined.Payments)
+        ScreenBlock("Charging Cost", "$54.00", Icons.Outlined.CreditCard)
+        ScreenBlock("Payment Method", "Mastercard •••• 8435", Icons.Outlined.CreditCard)
+    }
+}
+
+@Composable
+private fun ChargingScreen() {
+    Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
+        ScreenBlock("Charging 71%", "Mercedes-Benz coupe • Price: $54.00", Icons.Outlined.BatteryChargingFull)
+        Card(shape = RoundedCornerShape(24.dp)) {
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(16.dp),
+                horizontalArrangement = Arrangement.SpaceBetween
+            ) {
+                Column { Text("Charging Rate", style = MaterialTheme.typography.labelLarge); Text("20 kw", fontWeight = FontWeight.Bold) }
+                Column { Text("Time Elapsed", style = MaterialTheme.typography.labelLarge); Text("16 mins", fontWeight = FontWeight.Bold) }
+            }
+        }
+        Button(onClick = {}, modifier = Modifier.fillMaxWidth()) { Text("Stop Charging") }
+    }
+}
+
+@Composable
+private fun TypeChip(label: String, selected: Boolean) {
     Card(
-        shape = RoundedCornerShape(24.dp),
-        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceContainerLow),
-        modifier = Modifier.fillMaxWidth()
+        shape = RoundedCornerShape(14.dp),
+        colors = CardDefaults.cardColors(
+            containerColor = if (selected) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.surfaceContainerLow
+        )
     ) {
-        Column(modifier = Modifier.padding(18.dp)) {
-            Icon(icon, null, tint = MaterialTheme.colorScheme.primary)
-            Spacer(Modifier.height(10.dp))
+        Text(
+            label,
+            modifier = Modifier.padding(horizontal = 16.dp, vertical = 10.dp),
+            color = if (selected) Color.Black else MaterialTheme.colorScheme.onSurface
+        )
+    }
+}
+
+@Composable
+private fun StatCard(title: String, value: String) {
+    Card(modifier = Modifier.weight(1f), shape = RoundedCornerShape(20.dp)) {
+        Column(modifier = Modifier.padding(14.dp), horizontalAlignment = Alignment.CenterHorizontally) {
+            Text(title, style = MaterialTheme.typography.labelLarge)
+            Text(value, style = MaterialTheme.typography.headlineSmall, fontWeight = FontWeight.Bold)
+        }
+    }
+}
+
+@Composable
+private fun ScreenBlock(title: String, subtitle: String, icon: androidx.compose.ui.graphics.vector.ImageVector) {
+    Card(
+        modifier = Modifier.fillMaxWidth(),
+        shape = RoundedCornerShape(24.dp),
+        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceContainerLow)
+    ) {
+        Column(modifier = Modifier.padding(16.dp)) {
+            Icon(icon, contentDescription = null, tint = MaterialTheme.colorScheme.primary)
+            Spacer(Modifier.height(8.dp))
             Text(title, style = MaterialTheme.typography.titleLarge, fontWeight = FontWeight.Bold)
-            Spacer(Modifier.height(6.dp))
-            Text(subtitle, style = MaterialTheme.typography.bodyMedium, textAlign = TextAlign.Start)
+            Text(subtitle, style = MaterialTheme.typography.bodyMedium, color = MaterialTheme.colorScheme.onSurfaceVariant)
         }
     }
 }
 
 @Preview(showBackground = true)
 @Composable
-private fun ParkingAppPreview() {
+private fun AppPreview() {
     ParkingMobileTheme {
-        ParkingApp()
+        ParkingFlowApp()
     }
 }

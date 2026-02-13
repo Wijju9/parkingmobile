@@ -17,7 +17,6 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
-import androidx.compose.foundation.layout.weight
 import androidx.compose.foundation.pager.HorizontalPager
 import androidx.compose.foundation.pager.rememberPagerState
 import androidx.compose.foundation.rememberScrollState
@@ -236,8 +235,8 @@ private fun DashboardScreen() {
     ) {
         ScreenBlock("Effortless Parking & Charging", "Battery 73% • Remaining 83km", Icons.Outlined.DirectionsCar)
         Row(horizontalArrangement = Arrangement.spacedBy(10.dp)) {
-            StatCard("Battery", "73%")
-            StatCard("Remaining", "83km")
+            StatCard("Battery", "73%", modifier = Modifier.weight(1f))
+            StatCard("Remaining", "83km", modifier = Modifier.weight(1f))
         }
         ScreenBlock("Nearest Station", "Oslo city parking garage, Stenersgata 162", Icons.Outlined.LocationOn)
     }
@@ -303,8 +302,8 @@ private fun TypeChip(label: String, selected: Boolean) {
 }
 
 @Composable
-private fun StatCard(title: String, value: String) {
-    Card(modifier = Modifier.weight(1f), shape = RoundedCornerShape(20.dp)) {
+private fun StatCard(title: String, value: String, modifier: Modifier = Modifier) {
+    Card(modifier = modifier, shape = RoundedCornerShape(20.dp)) {
         Column(modifier = Modifier.padding(14.dp), horizontalAlignment = Alignment.CenterHorizontally) {
             Text(title, style = MaterialTheme.typography.labelLarge)
             Text(value, style = MaterialTheme.typography.headlineSmall, fontWeight = FontWeight.Bold)
